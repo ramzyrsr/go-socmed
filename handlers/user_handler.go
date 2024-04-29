@@ -43,7 +43,7 @@ func UserSetupRoutes(r *gin.Engine, userService *user.UserService) {
 		// Create user
 		err := userService.CreateUser(&user)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
 
