@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/ramzyrsr/domain/user"
 )
@@ -10,11 +11,22 @@ type UserRepositoryPG struct {
 	db *sql.DB
 }
 
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
 func NewUserRepositoryPG(db *sql.DB) *UserRepositoryPG {
 	return &UserRepositoryPG{db: db}
 }
 
 func (ur *UserRepositoryPG) Create(user *user.User) error {
+	var count int
+	_ = ur.db.QueryRow("SELECT count(email) FROM users WHERE email = $1", user.Email).Scan(&count)
+	if count != 0 {
+		errorMessage := fmt.Errorf("email already used. Please check your email")
+		return errorMessage
+	}
+
 	_, err := ur.db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", user.Name, user.Email)
 	return err
 }
